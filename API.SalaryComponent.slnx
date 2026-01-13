@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="API.SalaryComponent/API.SalaryComponent.csproj" />
+  <Project Path="Core.SalaryComponent/Core.SalaryComponent.csproj" />
+  <Project Path="Infrastructure.SalaryComponent/Infrastructure.SalaryComponent.csproj" />
+</Solution>
