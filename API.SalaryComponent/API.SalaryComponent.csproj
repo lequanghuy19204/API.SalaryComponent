@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core.SalaryComponent\Core.SalaryComponent.csproj" />
+    <ProjectReference Include="..\Infrastructure.SalaryComponent\Infrastructure.SalaryComponent.csproj" />
   </ItemGroup>
 
 </Project>

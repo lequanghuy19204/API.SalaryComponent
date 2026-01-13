@@ -47,7 +47,6 @@ launchSettings.json
 
 # appsettings secrets
 appsettings.*.json
-appsettings.json
 appsettings.Development.json
 
 # Publish output
