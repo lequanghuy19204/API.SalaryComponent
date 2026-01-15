@@ -10,4 +10,6 @@ public interface ISalaryCompositionRepository
     Task<bool> UpdateAsync(Guid id, SalaryCompositionCreateDto dto);
     Task<bool> DeleteAsync(Guid id);
     Task<bool> IsCodeExistsAsync(string code, Guid? excludeId = null);
+    Task<bool> UpdateStatusAsync(Guid id, int status);
+    Task BulkUpdateStatusAsync(List<Guid> ids, int status);
 }

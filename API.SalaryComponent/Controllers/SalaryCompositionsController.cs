@@ -85,4 +85,47 @@ public class SalaryCompositionsController : ControllerBase
         }
         return NoContent();
     }
+
+    [HttpPatch("{id}/status")]
+    public async Task<ActionResult> UpdateStatus(Guid id, [FromBody] UpdateStatusDto dto)
+    {
+        try
+        {
+            var result = await _service.UpdateStatusAsync(id, dto.Status);
+            if (!result)
+            {
+                return NotFound(new { message = "Không tìm thấy thành phần lương" });
+            }
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPatch("bulk-status")]
+    public async Task<ActionResult> BulkUpdateStatus([FromBody] BulkUpdateStatusDto dto)
+    {
+        try
+        {
+            await _service.BulkUpdateStatusAsync(dto.Ids, dto.Status);
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+}
+
+public class UpdateStatusDto
+{
+    public int Status { get; set; }
+}
+
+public class BulkUpdateStatusDto
+{
+    public List<Guid> Ids { get; set; } = new();
+    public int Status { get; set; }
 }

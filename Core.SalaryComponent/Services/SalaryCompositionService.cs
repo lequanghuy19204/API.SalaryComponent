@@ -67,4 +67,20 @@ public class SalaryCompositionService : ISalaryCompositionService
 
         return await _repository.DeleteAsync(id);
     }
+
+    public async Task<bool> UpdateStatusAsync(Guid id, int status)
+    {
+        var existing = await _repository.GetByIdAsync(id);
+        if (existing == null)
+        {
+            throw NotFoundException.WithEntity("Thành phần lương", id);
+        }
+
+        return await _repository.UpdateStatusAsync(id, status);
+    }
+
+    public async Task BulkUpdateStatusAsync(List<Guid> ids, int status)
+    {
+        await _repository.BulkUpdateStatusAsync(ids, status);
+    }
 }

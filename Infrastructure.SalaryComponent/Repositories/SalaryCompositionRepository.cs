@@ -126,7 +126,6 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
                    sum_scope, org_level, salary_component_to_sum, value_formula, description, 
                    show_on_payslip, source, status, created_date, modified_date
             FROM pa_salary_composition 
-            WHERE status = 1
             ORDER BY created_date DESC";
 
         var results = await connection.QueryAsync<SalaryCompositionEntity>(sql);
@@ -239,9 +238,26 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
     public async Task<bool> DeleteAsync(Guid id)
     {
         using var connection = CreateConnection();
-        var sql = "UPDATE pa_salary_composition SET status = 0 WHERE id = @Id";
-        var affected = await connection.ExecuteAsync(sql, new { Id = id.ToString() });
-        return affected > 0;
+        await connection.OpenAsync();
+        using var transaction = await connection.BeginTransactionAsync();
+
+        try
+        {
+            await connection.ExecuteAsync(
+                "DELETE FROM pa_salary_composition_organization WHERE salary_composition_id = @Id",
+                new { Id = id.ToString() }, transaction);
+
+            var sql = "DELETE FROM pa_salary_composition WHERE id = @Id";
+            var affected = await connection.ExecuteAsync(sql, new { Id = id.ToString() }, transaction);
+
+            await transaction.CommitAsync();
+            return affected > 0;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<bool> IsCodeExistsAsync(string code, Guid? excludeId = null)
@@ -254,6 +270,24 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
 
         var count = await connection.ExecuteScalarAsync<int>(sql, new { Code = code, ExcludeId = excludeId?.ToString() });
         return count > 0;
+    }
+
+    public async Task<bool> UpdateStatusAsync(Guid id, int status)
+    {
+        using var connection = CreateConnection();
+        var sql = "UPDATE pa_salary_composition SET status = @Status, modified_date = NOW() WHERE id = @Id";
+        var affected = await connection.ExecuteAsync(sql, new { Id = id.ToString(), Status = status });
+        return affected > 0;
+    }
+
+    public async Task BulkUpdateStatusAsync(List<Guid> ids, int status)
+    {
+        if (ids.Count == 0) return;
+
+        using var connection = CreateConnection();
+        var idStrings = ids.Select(id => id.ToString()).ToList();
+        var sql = "UPDATE pa_salary_composition SET status = @Status, modified_date = NOW() WHERE id IN @Ids";
+        await connection.ExecuteAsync(sql, new { Ids = idStrings, Status = status });
     }
 
     private static int ConvertShowOnPayslip(string value) => value switch
