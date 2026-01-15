@@ -45,4 +45,10 @@ public class SalaryCompositionCreateDto
     public string ShowOnPayslip { get; set; } = "yes";
 
     public string Source { get; set; } = "manual";
+
+    public int Status { get; set; } = 1;
+
+    public string? TaxablePart { get; set; }
+
+    public string? TaxExemptPart { get; set; }
 }

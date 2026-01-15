@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Core.SalaryComponent.DTOs;
 using Core.SalaryComponent.Interfaces.IServices;
+using Core.SalaryComponent.Exceptions;
 
 namespace API.SalaryComponent.Controllers;
 
@@ -46,6 +47,10 @@ public class SalaryCompositionsController : ControllerBase
             var id = await _service.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id }, new { id });
         }
+        catch (DuplicateException ex)
+        {
+            return Conflict(new { message = ex.Message, errorCode = ex.ErrorCode });
+        }
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
@@ -68,6 +73,10 @@ public class SalaryCompositionsController : ControllerBase
                 return NotFound(new { message = "Không tìm thấy thành phần lương" });
             }
             return NoContent();
+        }
+        catch (DuplicateException ex)
+        {
+            return Conflict(new { message = ex.Message, errorCode = ex.ErrorCode });
         }
         catch (InvalidOperationException ex)
         {

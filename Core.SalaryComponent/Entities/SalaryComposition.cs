@@ -148,6 +148,16 @@ public class SalaryComposition
     public int Status { get; set; } = 1;
 
     /// <summary>
+    /// Công thức phần chịu thuế - CHỈ áp dụng khi TaxOption = "tax_exempt_partial"
+    /// </summary>
+    public string? TaxablePart { get; set; }
+
+    /// <summary>
+    /// Công thức phần miễn thuế - CHỈ áp dụng khi TaxOption = "tax_exempt_partial"
+    /// </summary>
+    public string? TaxExemptPart { get; set; }
+
+    /// <summary>
     /// Ngày tạo
     /// </summary>
     public DateTime CreatedDate { get; set; }

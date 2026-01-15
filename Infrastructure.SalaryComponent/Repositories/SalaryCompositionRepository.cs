@@ -35,12 +35,12 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
                 (id, composition_code, composition_name, composition_type, nature, tax_option, 
                  tax_deduction, quota, allow_exceed_quota, value_type, value_calculation, 
                  sum_scope, org_level, salary_component_to_sum, value_formula, description, 
-                 show_on_payslip, source, status, created_date, modified_date)
+                 show_on_payslip, source, status, taxable_part, tax_exempt_part, created_date, modified_date)
                 VALUES 
                 (@Id, @CompositionCode, @CompositionName, @CompositionType, @Nature, @TaxOption, 
                  @TaxDeduction, @Quota, @AllowExceedQuota, @ValueType, @ValueCalculation,
                  @SumScope, @OrgLevel, @SalaryComponentToSum, @ValueFormula, @Description,
-                 @ShowOnPayslip, @Source, 1, NOW(), NOW())";
+                 @ShowOnPayslip, @Source, @Status, @TaxablePart, @TaxExemptPart, NOW(), NOW())";
 
             await connection.ExecuteAsync(sql, new
             {
@@ -61,7 +61,10 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
                 dto.ValueFormula,
                 dto.Description,
                 ShowOnPayslip = showOnPayslip,
-                Source = source
+                Source = source,
+                dto.Status,
+                dto.TaxablePart,
+                dto.TaxExemptPart
             }, transaction);
 
             if (dto.UnitIds.Count > 0)
@@ -100,7 +103,7 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
             SELECT id, composition_code, composition_name, composition_type, nature, tax_option,
                    tax_deduction, quota, allow_exceed_quota, value_type, value_calculation, 
                    sum_scope, org_level, salary_component_to_sum, value_formula, description, 
-                   show_on_payslip, source, status, created_date, modified_date
+                   show_on_payslip, source, status, taxable_part, tax_exempt_part, created_date, modified_date
             FROM pa_salary_composition 
             WHERE id = @Id";
 
@@ -124,7 +127,7 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
             SELECT id, composition_code, composition_name, composition_type, nature, tax_option,
                    tax_deduction, quota, allow_exceed_quota, value_type, value_calculation, 
                    sum_scope, org_level, salary_component_to_sum, value_formula, description, 
-                   show_on_payslip, source, status, created_date, modified_date
+                   show_on_payslip, source, status, taxable_part, tax_exempt_part, created_date, modified_date
             FROM pa_salary_composition 
             ORDER BY created_date DESC";
 
@@ -178,6 +181,9 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
                     description = @Description,
                     show_on_payslip = @ShowOnPayslip,
                     source = @Source,
+                    status = @Status,
+                    taxable_part = @TaxablePart,
+                    tax_exempt_part = @TaxExemptPart,
                     modified_date = NOW()
                 WHERE id = @Id";
 
@@ -200,7 +206,10 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
                 dto.ValueFormula,
                 dto.Description,
                 ShowOnPayslip = showOnPayslip,
-                Source = source
+                Source = source,
+                dto.Status,
+                dto.TaxablePart,
+                dto.TaxExemptPart
             }, transaction);
 
             await connection.ExecuteAsync(
@@ -336,6 +345,8 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
             ShowOnPayslip = ConvertShowOnPayslipToString(entity.ShowOnPayslip),
             Source = ConvertSourceToString(entity.Source),
             Status = entity.Status,
+            TaxablePart = entity.TaxablePart,
+            TaxExemptPart = entity.TaxExemptPart,
             CreatedDate = entity.CreatedDate,
             ModifiedDate = entity.ModifiedDate
         };
@@ -362,6 +373,8 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         public int ShowOnPayslip { get; set; }
         public int Source { get; set; }
         public int Status { get; set; }
+        public string? TaxablePart { get; set; }
+        public string? TaxExemptPart { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
     }

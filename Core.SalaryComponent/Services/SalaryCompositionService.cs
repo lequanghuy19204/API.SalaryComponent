@@ -19,7 +19,7 @@ public class SalaryCompositionService : ISalaryCompositionService
         var isCodeExists = await _repository.IsCodeExistsAsync(dto.Code);
         if (isCodeExists)
         {
-            throw DuplicateException.WithField("Mã thành phần", dto.Code);
+            throw new DuplicateException("Mã thành phần đã tồn tại");
         }
 
         return await _repository.CreateAsync(dto);
@@ -51,7 +51,7 @@ public class SalaryCompositionService : ISalaryCompositionService
         var isCodeExists = await _repository.IsCodeExistsAsync(dto.Code, id);
         if (isCodeExists)
         {
-            throw DuplicateException.WithField("Mã thành phần", dto.Code);
+            throw new DuplicateException("Mã thành phần đã tồn tại");
         }
 
         return await _repository.UpdateAsync(id, dto);
