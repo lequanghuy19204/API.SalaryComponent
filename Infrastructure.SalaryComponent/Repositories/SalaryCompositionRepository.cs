@@ -27,54 +27,58 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         try
         {
             var id = Guid.NewGuid();
-            var showOnPayslip = ConvertShowOnPayslip(dto.ShowOnPayslip);
-            var source = dto.Source == "system" ? 1 : 2;
+            var showOnPayslip = ConvertShowOnPayslip(dto.SalaryCompositionShowOnPayslip);
+            var source = dto.SalaryCompositionSource == "system" ? 1 : 2;
 
             var sql = @"
                 INSERT INTO pa_salary_composition 
-                (id, composition_code, composition_name, composition_type, nature, tax_option, 
-                 tax_deduction, quota, allow_exceed_quota, value_type, value_calculation, 
-                 sum_scope, org_level, salary_component_to_sum, value_formula, description, 
-                 show_on_payslip, source, status, taxable_part, tax_exempt_part, created_date, modified_date)
+                (salary_composition_id, salary_composition_code, salary_composition_name, 
+                 salary_composition_type, salary_composition_nature, salary_composition_tax_option, 
+                 salary_composition_tax_deduction, salary_composition_quota, salary_composition_allow_exceed_quota, 
+                 salary_composition_value_type, salary_composition_value_calculation, salary_composition_sum_scope, 
+                 salary_composition_org_level, salary_composition_component_to_sum, salary_composition_value_formula, 
+                 salary_composition_description, salary_composition_show_on_payslip, salary_composition_source, 
+                 salary_composition_status, salary_composition_taxable_part, salary_composition_tax_exempt_part,
+                 salary_composition_created_date, salary_composition_modified_date)
                 VALUES 
-                (@Id, @CompositionCode, @CompositionName, @CompositionType, @Nature, @TaxOption, 
-                 @TaxDeduction, @Quota, @AllowExceedQuota, @ValueType, @ValueCalculation,
-                 @SumScope, @OrgLevel, @SalaryComponentToSum, @ValueFormula, @Description,
-                 @ShowOnPayslip, @Source, @Status, @TaxablePart, @TaxExemptPart, NOW(), NOW())";
+                (@Id, @Code, @Name, @Type, @Nature, @TaxOption, @TaxDeduction, @Quota, @AllowExceedQuota,
+                 @ValueType, @ValueCalculation, @SumScope, @OrgLevel, @ComponentToSum, @ValueFormula,
+                 @Description, @ShowOnPayslip, @Source, @Status, @TaxablePart, @TaxExemptPart, NOW(), NOW())";
 
             await connection.ExecuteAsync(sql, new
             {
                 Id = id.ToString(),
-                CompositionCode = dto.Code,
-                CompositionName = dto.Name,
-                CompositionType = dto.Type,
-                Nature = dto.Property,
-                dto.TaxOption,
-                TaxDeduction = dto.DeductWhenCalculatingTax,
-                dto.Quota,
-                dto.AllowExceedQuota,
-                dto.ValueType,
-                dto.ValueCalculation,
-                dto.SumScope,
-                dto.OrgLevel,
-                dto.SalaryComponentToSum,
-                dto.ValueFormula,
-                dto.Description,
+                Code = dto.SalaryCompositionCode,
+                Name = dto.SalaryCompositionName,
+                Type = dto.SalaryCompositionType,
+                Nature = dto.SalaryCompositionNature,
+                TaxOption = dto.SalaryCompositionTaxOption,
+                TaxDeduction = dto.SalaryCompositionTaxDeduction,
+                Quota = dto.SalaryCompositionQuota,
+                AllowExceedQuota = dto.SalaryCompositionAllowExceedQuota,
+                ValueType = dto.SalaryCompositionValueType,
+                ValueCalculation = dto.SalaryCompositionValueCalculation,
+                SumScope = dto.SalaryCompositionSumScope,
+                OrgLevel = dto.SalaryCompositionOrgLevel,
+                ComponentToSum = dto.SalaryCompositionComponentToSum,
+                ValueFormula = dto.SalaryCompositionValueFormula,
+                Description = dto.SalaryCompositionDescription,
                 ShowOnPayslip = showOnPayslip,
                 Source = source,
-                dto.Status,
-                dto.TaxablePart,
-                dto.TaxExemptPart
+                Status = dto.SalaryCompositionStatus,
+                TaxablePart = dto.SalaryCompositionTaxablePart,
+                TaxExemptPart = dto.SalaryCompositionTaxExemptPart
             }, transaction);
 
-            if (dto.UnitIds.Count > 0)
+            if (dto.OrganizationIds.Count > 0)
             {
                 var orgSql = @"
                     INSERT INTO pa_salary_composition_organization 
-                    (id, salary_composition_id, organization_id, created_date)
+                    (salary_composition_organization_id, salary_composition_id, organization_id, 
+                     salary_composition_organization_created_date)
                     VALUES (@Id, @SalaryCompositionId, @OrganizationId, NOW())";
 
-                foreach (var orgId in dto.UnitIds)
+                foreach (var orgId in dto.OrganizationIds)
                 {
                     await connection.ExecuteAsync(orgSql, new
                     {
@@ -100,12 +104,16 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         using var connection = CreateConnection();
 
         var sql = @"
-            SELECT id, composition_code, composition_name, composition_type, nature, tax_option,
-                   tax_deduction, quota, allow_exceed_quota, value_type, value_calculation, 
-                   sum_scope, org_level, salary_component_to_sum, value_formula, description, 
-                   show_on_payslip, source, status, taxable_part, tax_exempt_part, created_date, modified_date
+            SELECT salary_composition_id, salary_composition_code, salary_composition_name,
+                   salary_composition_type, salary_composition_nature, salary_composition_tax_option,
+                   salary_composition_tax_deduction, salary_composition_quota, salary_composition_allow_exceed_quota,
+                   salary_composition_value_type, salary_composition_value_calculation, salary_composition_sum_scope,
+                   salary_composition_org_level, salary_composition_component_to_sum, salary_composition_value_formula,
+                   salary_composition_description, salary_composition_show_on_payslip, salary_composition_source,
+                   salary_composition_status, salary_composition_taxable_part, salary_composition_tax_exempt_part,
+                   salary_composition_created_date, salary_composition_modified_date
             FROM pa_salary_composition 
-            WHERE id = @Id";
+            WHERE salary_composition_id = @Id";
 
         var result = await connection.QueryFirstOrDefaultAsync<SalaryCompositionEntity>(sql, new { Id = id.ToString() });
         if (result == null) return null;
@@ -114,7 +122,7 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
 
         var orgSql = "SELECT organization_id FROM pa_salary_composition_organization WHERE salary_composition_id = @Id";
         var orgIds = await connection.QueryAsync<string>(orgSql, new { Id = id.ToString() });
-        dto.UnitIds = orgIds.Select(Guid.Parse).ToList();
+        dto.OrganizationIds = orgIds.Select(Guid.Parse).ToList();
 
         return dto;
     }
@@ -124,12 +132,16 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         using var connection = CreateConnection();
 
         var sql = @"
-            SELECT id, composition_code, composition_name, composition_type, nature, tax_option,
-                   tax_deduction, quota, allow_exceed_quota, value_type, value_calculation, 
-                   sum_scope, org_level, salary_component_to_sum, value_formula, description, 
-                   show_on_payslip, source, status, taxable_part, tax_exempt_part, created_date, modified_date
+            SELECT salary_composition_id, salary_composition_code, salary_composition_name,
+                   salary_composition_type, salary_composition_nature, salary_composition_tax_option,
+                   salary_composition_tax_deduction, salary_composition_quota, salary_composition_allow_exceed_quota,
+                   salary_composition_value_type, salary_composition_value_calculation, salary_composition_sum_scope,
+                   salary_composition_org_level, salary_composition_component_to_sum, salary_composition_value_formula,
+                   salary_composition_description, salary_composition_show_on_payslip, salary_composition_source,
+                   salary_composition_status, salary_composition_taxable_part, salary_composition_tax_exempt_part,
+                   salary_composition_created_date, salary_composition_modified_date
             FROM pa_salary_composition 
-            ORDER BY created_date DESC";
+            ORDER BY salary_composition_created_date DESC";
 
         var results = await connection.QueryAsync<SalaryCompositionEntity>(sql);
         var dtos = results.Select(MapToDto).ToList();
@@ -142,9 +154,9 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
 
         foreach (var dto in dtos)
         {
-            if (orgDict.TryGetValue(dto.Id.ToString(), out var unitIds))
+            if (orgDict.TryGetValue(dto.SalaryCompositionId.ToString(), out var organizationIds))
             {
-                dto.UnitIds = unitIds;
+                dto.OrganizationIds = organizationIds;
             }
         }
 
@@ -159,71 +171,72 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
 
         try
         {
-            var showOnPayslip = ConvertShowOnPayslip(dto.ShowOnPayslip);
-            var source = dto.Source == "system" ? 1 : 2;
+            var showOnPayslip = ConvertShowOnPayslip(dto.SalaryCompositionShowOnPayslip);
+            var source = dto.SalaryCompositionSource == "system" ? 1 : 2;
 
             var sql = @"
                 UPDATE pa_salary_composition SET
-                    composition_code = @CompositionCode,
-                    composition_name = @CompositionName,
-                    composition_type = @CompositionType,
-                    nature = @Nature,
-                    tax_option = @TaxOption,
-                    tax_deduction = @TaxDeduction,
-                    quota = @Quota,
-                    allow_exceed_quota = @AllowExceedQuota,
-                    value_type = @ValueType,
-                    value_calculation = @ValueCalculation,
-                    sum_scope = @SumScope,
-                    org_level = @OrgLevel,
-                    salary_component_to_sum = @SalaryComponentToSum,
-                    value_formula = @ValueFormula,
-                    description = @Description,
-                    show_on_payslip = @ShowOnPayslip,
-                    source = @Source,
-                    status = @Status,
-                    taxable_part = @TaxablePart,
-                    tax_exempt_part = @TaxExemptPart,
-                    modified_date = NOW()
-                WHERE id = @Id";
+                    salary_composition_code = @Code,
+                    salary_composition_name = @Name,
+                    salary_composition_type = @Type,
+                    salary_composition_nature = @Nature,
+                    salary_composition_tax_option = @TaxOption,
+                    salary_composition_tax_deduction = @TaxDeduction,
+                    salary_composition_quota = @Quota,
+                    salary_composition_allow_exceed_quota = @AllowExceedQuota,
+                    salary_composition_value_type = @ValueType,
+                    salary_composition_value_calculation = @ValueCalculation,
+                    salary_composition_sum_scope = @SumScope,
+                    salary_composition_org_level = @OrgLevel,
+                    salary_composition_component_to_sum = @ComponentToSum,
+                    salary_composition_value_formula = @ValueFormula,
+                    salary_composition_description = @Description,
+                    salary_composition_show_on_payslip = @ShowOnPayslip,
+                    salary_composition_source = @Source,
+                    salary_composition_status = @Status,
+                    salary_composition_taxable_part = @TaxablePart,
+                    salary_composition_tax_exempt_part = @TaxExemptPart,
+                    salary_composition_modified_date = NOW()
+                WHERE salary_composition_id = @Id";
 
             var affected = await connection.ExecuteAsync(sql, new
             {
                 Id = id.ToString(),
-                CompositionCode = dto.Code,
-                CompositionName = dto.Name,
-                CompositionType = dto.Type,
-                Nature = dto.Property,
-                dto.TaxOption,
-                TaxDeduction = dto.DeductWhenCalculatingTax,
-                dto.Quota,
-                dto.AllowExceedQuota,
-                dto.ValueType,
-                dto.ValueCalculation,
-                dto.SumScope,
-                dto.OrgLevel,
-                dto.SalaryComponentToSum,
-                dto.ValueFormula,
-                dto.Description,
+                Code = dto.SalaryCompositionCode,
+                Name = dto.SalaryCompositionName,
+                Type = dto.SalaryCompositionType,
+                Nature = dto.SalaryCompositionNature,
+                TaxOption = dto.SalaryCompositionTaxOption,
+                TaxDeduction = dto.SalaryCompositionTaxDeduction,
+                Quota = dto.SalaryCompositionQuota,
+                AllowExceedQuota = dto.SalaryCompositionAllowExceedQuota,
+                ValueType = dto.SalaryCompositionValueType,
+                ValueCalculation = dto.SalaryCompositionValueCalculation,
+                SumScope = dto.SalaryCompositionSumScope,
+                OrgLevel = dto.SalaryCompositionOrgLevel,
+                ComponentToSum = dto.SalaryCompositionComponentToSum,
+                ValueFormula = dto.SalaryCompositionValueFormula,
+                Description = dto.SalaryCompositionDescription,
                 ShowOnPayslip = showOnPayslip,
                 Source = source,
-                dto.Status,
-                dto.TaxablePart,
-                dto.TaxExemptPart
+                Status = dto.SalaryCompositionStatus,
+                TaxablePart = dto.SalaryCompositionTaxablePart,
+                TaxExemptPart = dto.SalaryCompositionTaxExemptPart
             }, transaction);
 
             await connection.ExecuteAsync(
                 "DELETE FROM pa_salary_composition_organization WHERE salary_composition_id = @Id",
                 new { Id = id.ToString() }, transaction);
 
-            if (dto.UnitIds.Count > 0)
+            if (dto.OrganizationIds.Count > 0)
             {
                 var orgSql = @"
                     INSERT INTO pa_salary_composition_organization 
-                    (id, salary_composition_id, organization_id, created_date)
+                    (salary_composition_organization_id, salary_composition_id, organization_id, 
+                     salary_composition_organization_created_date)
                     VALUES (@Id, @SalaryCompositionId, @OrganizationId, NOW())";
 
-                foreach (var orgId in dto.UnitIds)
+                foreach (var orgId in dto.OrganizationIds)
                 {
                     await connection.ExecuteAsync(orgSql, new
                     {
@@ -256,7 +269,7 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
                 "DELETE FROM pa_salary_composition_organization WHERE salary_composition_id = @Id",
                 new { Id = id.ToString() }, transaction);
 
-            var sql = "DELETE FROM pa_salary_composition WHERE id = @Id";
+            var sql = "DELETE FROM pa_salary_composition WHERE salary_composition_id = @Id";
             var affected = await connection.ExecuteAsync(sql, new { Id = id.ToString() }, transaction);
 
             await transaction.CommitAsync();
@@ -274,8 +287,8 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         using var connection = CreateConnection();
 
         var sql = excludeId.HasValue
-            ? "SELECT COUNT(1) FROM pa_salary_composition WHERE composition_code = @Code AND id != @ExcludeId AND status = 1"
-            : "SELECT COUNT(1) FROM pa_salary_composition WHERE composition_code = @Code AND status = 1";
+            ? "SELECT COUNT(1) FROM pa_salary_composition WHERE salary_composition_code = @Code AND salary_composition_id != @ExcludeId AND salary_composition_status = 1"
+            : "SELECT COUNT(1) FROM pa_salary_composition WHERE salary_composition_code = @Code AND salary_composition_status = 1";
 
         var count = await connection.ExecuteScalarAsync<int>(sql, new { Code = code, ExcludeId = excludeId?.ToString() });
         return count > 0;
@@ -284,7 +297,7 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
     public async Task<bool> UpdateStatusAsync(Guid id, int status)
     {
         using var connection = CreateConnection();
-        var sql = "UPDATE pa_salary_composition SET status = @Status, modified_date = NOW() WHERE id = @Id";
+        var sql = "UPDATE pa_salary_composition SET salary_composition_status = @Status, salary_composition_modified_date = NOW() WHERE salary_composition_id = @Id";
         var affected = await connection.ExecuteAsync(sql, new { Id = id.ToString(), Status = status });
         return affected > 0;
     }
@@ -295,7 +308,7 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
 
         using var connection = CreateConnection();
         var idStrings = ids.Select(id => id.ToString()).ToList();
-        var sql = "UPDATE pa_salary_composition SET status = @Status, modified_date = NOW() WHERE id IN @Ids";
+        var sql = "UPDATE pa_salary_composition SET salary_composition_status = @Status, salary_composition_modified_date = NOW() WHERE salary_composition_id IN @Ids";
         await connection.ExecuteAsync(sql, new { Ids = idStrings, Status = status });
     }
 
@@ -326,57 +339,57 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
     {
         return new SalaryCompositionDto
         {
-            Id = Guid.Parse(entity.Id),
-            Code = entity.CompositionCode,
-            Name = entity.CompositionName,
-            Type = entity.CompositionType,
-            Property = entity.Nature,
-            TaxOption = entity.TaxOption ?? "taxable",
-            DeductWhenCalculatingTax = entity.TaxDeduction,
-            Quota = entity.Quota,
-            AllowExceedQuota = entity.AllowExceedQuota,
-            ValueType = entity.ValueType ?? "currency",
-            ValueCalculation = entity.ValueCalculation ?? "formula",
-            SumScope = entity.SumScope,
-            OrgLevel = entity.OrgLevel,
-            SalaryComponentToSum = entity.SalaryComponentToSum,
-            ValueFormula = entity.ValueFormula,
-            Description = entity.Description,
-            ShowOnPayslip = ConvertShowOnPayslipToString(entity.ShowOnPayslip),
-            Source = ConvertSourceToString(entity.Source),
-            Status = entity.Status,
-            TaxablePart = entity.TaxablePart,
-            TaxExemptPart = entity.TaxExemptPart,
-            CreatedDate = entity.CreatedDate,
-            ModifiedDate = entity.ModifiedDate
+            SalaryCompositionId = Guid.Parse(entity.SalaryCompositionId),
+            SalaryCompositionCode = entity.SalaryCompositionCode,
+            SalaryCompositionName = entity.SalaryCompositionName,
+            SalaryCompositionType = entity.SalaryCompositionType,
+            SalaryCompositionNature = entity.SalaryCompositionNature,
+            SalaryCompositionTaxOption = entity.SalaryCompositionTaxOption ?? "taxable",
+            SalaryCompositionTaxDeduction = entity.SalaryCompositionTaxDeduction,
+            SalaryCompositionQuota = entity.SalaryCompositionQuota,
+            SalaryCompositionAllowExceedQuota = entity.SalaryCompositionAllowExceedQuota,
+            SalaryCompositionValueType = entity.SalaryCompositionValueType ?? "currency",
+            SalaryCompositionValueCalculation = entity.SalaryCompositionValueCalculation ?? "formula",
+            SalaryCompositionSumScope = entity.SalaryCompositionSumScope,
+            SalaryCompositionOrgLevel = entity.SalaryCompositionOrgLevel,
+            SalaryCompositionComponentToSum = entity.SalaryCompositionComponentToSum,
+            SalaryCompositionValueFormula = entity.SalaryCompositionValueFormula,
+            SalaryCompositionDescription = entity.SalaryCompositionDescription,
+            SalaryCompositionShowOnPayslip = ConvertShowOnPayslipToString(entity.SalaryCompositionShowOnPayslip),
+            SalaryCompositionSource = ConvertSourceToString(entity.SalaryCompositionSource),
+            SalaryCompositionStatus = entity.SalaryCompositionStatus,
+            SalaryCompositionTaxablePart = entity.SalaryCompositionTaxablePart,
+            SalaryCompositionTaxExemptPart = entity.SalaryCompositionTaxExemptPart,
+            SalaryCompositionCreatedDate = entity.SalaryCompositionCreatedDate,
+            SalaryCompositionModifiedDate = entity.SalaryCompositionModifiedDate
         };
     }
 
     private class SalaryCompositionEntity
     {
-        public string Id { get; set; } = string.Empty;
-        public string CompositionCode { get; set; } = string.Empty;
-        public string CompositionName { get; set; } = string.Empty;
-        public string CompositionType { get; set; } = string.Empty;
-        public string Nature { get; set; } = string.Empty;
-        public string? TaxOption { get; set; }
-        public bool TaxDeduction { get; set; }
-        public string? Quota { get; set; }
-        public bool AllowExceedQuota { get; set; }
-        public string? ValueType { get; set; }
-        public string? ValueCalculation { get; set; }
-        public string? SumScope { get; set; }
-        public string? OrgLevel { get; set; }
-        public string? SalaryComponentToSum { get; set; }
-        public string? ValueFormula { get; set; }
-        public string? Description { get; set; }
-        public int ShowOnPayslip { get; set; }
-        public int Source { get; set; }
-        public int Status { get; set; }
-        public string? TaxablePart { get; set; }
-        public string? TaxExemptPart { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime ModifiedDate { get; set; }
+        public string SalaryCompositionId { get; set; } = string.Empty;
+        public string SalaryCompositionCode { get; set; } = string.Empty;
+        public string SalaryCompositionName { get; set; } = string.Empty;
+        public string SalaryCompositionType { get; set; } = string.Empty;
+        public string SalaryCompositionNature { get; set; } = string.Empty;
+        public string? SalaryCompositionTaxOption { get; set; }
+        public bool SalaryCompositionTaxDeduction { get; set; }
+        public string? SalaryCompositionQuota { get; set; }
+        public bool SalaryCompositionAllowExceedQuota { get; set; }
+        public string? SalaryCompositionValueType { get; set; }
+        public string? SalaryCompositionValueCalculation { get; set; }
+        public string? SalaryCompositionSumScope { get; set; }
+        public string? SalaryCompositionOrgLevel { get; set; }
+        public string? SalaryCompositionComponentToSum { get; set; }
+        public string? SalaryCompositionValueFormula { get; set; }
+        public string? SalaryCompositionDescription { get; set; }
+        public int SalaryCompositionShowOnPayslip { get; set; }
+        public int SalaryCompositionSource { get; set; }
+        public int SalaryCompositionStatus { get; set; }
+        public string? SalaryCompositionTaxablePart { get; set; }
+        public string? SalaryCompositionTaxExemptPart { get; set; }
+        public DateTime SalaryCompositionCreatedDate { get; set; }
+        public DateTime SalaryCompositionModifiedDate { get; set; }
     }
 
     private class OrgMappingEntity

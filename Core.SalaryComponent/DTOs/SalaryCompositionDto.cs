@@ -2,28 +2,28 @@ namespace Core.SalaryComponent.DTOs;
 
 public class SalaryCompositionDto
 {
-    public Guid Id { get; set; }
-    public string Code { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public List<Guid> UnitIds { get; set; } = new();
-    public string Type { get; set; } = string.Empty;
-    public string Property { get; set; } = "income";
-    public string TaxOption { get; set; } = "taxable";
-    public bool DeductWhenCalculatingTax { get; set; }
-    public string? Quota { get; set; }
-    public bool AllowExceedQuota { get; set; }
-    public string ValueType { get; set; } = "currency";
-    public string ValueCalculation { get; set; } = "formula";
-    public string? SumScope { get; set; }
-    public string? OrgLevel { get; set; }
-    public string? SalaryComponentToSum { get; set; }
-    public string? ValueFormula { get; set; }
-    public string? Description { get; set; }
-    public string ShowOnPayslip { get; set; } = "yes";
-    public string Source { get; set; } = "manual";
-    public int Status { get; set; } = 1;
-    public string? TaxablePart { get; set; }
-    public string? TaxExemptPart { get; set; }
-    public DateTime CreatedDate { get; set; }
-    public DateTime ModifiedDate { get; set; }
+    public Guid SalaryCompositionId { get; set; }
+    public string SalaryCompositionCode { get; set; } = string.Empty;
+    public string SalaryCompositionName { get; set; } = string.Empty;
+    public List<Guid> OrganizationIds { get; set; } = new();
+    public string SalaryCompositionType { get; set; } = string.Empty;
+    public string SalaryCompositionNature { get; set; } = "income";
+    public string SalaryCompositionTaxOption { get; set; } = "taxable";
+    public bool SalaryCompositionTaxDeduction { get; set; }
+    public string? SalaryCompositionQuota { get; set; }
+    public bool SalaryCompositionAllowExceedQuota { get; set; }
+    public string SalaryCompositionValueType { get; set; } = "currency";
+    public string SalaryCompositionValueCalculation { get; set; } = "formula";
+    public string? SalaryCompositionSumScope { get; set; }
+    public string? SalaryCompositionOrgLevel { get; set; }
+    public string? SalaryCompositionComponentToSum { get; set; }
+    public string? SalaryCompositionValueFormula { get; set; }
+    public string? SalaryCompositionDescription { get; set; }
+    public string SalaryCompositionShowOnPayslip { get; set; } = "yes";
+    public string SalaryCompositionSource { get; set; } = "manual";
+    public int SalaryCompositionStatus { get; set; } = 1;
+    public string? SalaryCompositionTaxablePart { get; set; }
+    public string? SalaryCompositionTaxExemptPart { get; set; }
+    public DateTime SalaryCompositionCreatedDate { get; set; }
+    public DateTime SalaryCompositionModifiedDate { get; set; }
 }

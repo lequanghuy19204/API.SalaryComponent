@@ -9,7 +9,7 @@ public class SalaryCompositionOrganization
     /// <summary>
     /// Khóa chính
     /// </summary>
-    public Guid Id { get; set; }
+    public Guid SalaryCompositionOrganizationId { get; set; }
 
     /// <summary>
     /// ID thành phần lương (FK -> SalaryComposition)
@@ -17,12 +17,12 @@ public class SalaryCompositionOrganization
     public Guid SalaryCompositionId { get; set; }
 
     /// <summary>
-    /// ID đơn vị tổ chức được áp dụng thành phần lương này
+    /// ID đơn vị tổ chức được áp dụng thành phần lương này (FK -> Organization)
     /// </summary>
     public Guid OrganizationId { get; set; }
 
     /// <summary>
     /// Ngày tạo bản ghi
     /// </summary>
-    public DateTime CreatedDate { get; set; }
+    public DateTime SalaryCompositionOrganizationCreatedDate { get; set; }
 }

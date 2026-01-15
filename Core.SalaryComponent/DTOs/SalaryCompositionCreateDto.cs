@@ -6,49 +6,49 @@ public class SalaryCompositionCreateDto
 {
     [Required(ErrorMessage = "Mã thành phần không được để trống")]
     [MaxLength(255)]
-    public string Code { get; set; } = string.Empty;
+    public string SalaryCompositionCode { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Tên thành phần không được để trống")]
     [MaxLength(255)]
-    public string Name { get; set; } = string.Empty;
+    public string SalaryCompositionName { get; set; } = string.Empty;
 
-    public List<Guid> UnitIds { get; set; } = new();
+    public List<Guid> OrganizationIds { get; set; } = new();
 
     [Required(ErrorMessage = "Loại thành phần không được để trống")]
-    public string Type { get; set; } = string.Empty;
+    public string SalaryCompositionType { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Tính chất không được để trống")]
-    public string Property { get; set; } = "income";
+    public string SalaryCompositionNature { get; set; } = "income";
 
-    public string? TaxOption { get; set; }
+    public string? SalaryCompositionTaxOption { get; set; }
 
-    public bool DeductWhenCalculatingTax { get; set; }
+    public bool SalaryCompositionTaxDeduction { get; set; }
 
-    public string? Quota { get; set; }
+    public string? SalaryCompositionQuota { get; set; }
 
-    public bool AllowExceedQuota { get; set; }
+    public bool SalaryCompositionAllowExceedQuota { get; set; }
 
-    public string ValueType { get; set; } = "currency";
+    public string SalaryCompositionValueType { get; set; } = "currency";
 
-    public string ValueCalculation { get; set; } = "formula";
+    public string SalaryCompositionValueCalculation { get; set; } = "formula";
 
-    public string? SumScope { get; set; }
+    public string? SalaryCompositionSumScope { get; set; }
 
-    public string? OrgLevel { get; set; }
+    public string? SalaryCompositionOrgLevel { get; set; }
 
-    public string? SalaryComponentToSum { get; set; }
+    public string? SalaryCompositionComponentToSum { get; set; }
 
-    public string? ValueFormula { get; set; }
+    public string? SalaryCompositionValueFormula { get; set; }
 
-    public string? Description { get; set; }
+    public string? SalaryCompositionDescription { get; set; }
 
-    public string ShowOnPayslip { get; set; } = "yes";
+    public string SalaryCompositionShowOnPayslip { get; set; } = "yes";
 
-    public string Source { get; set; } = "manual";
+    public string SalaryCompositionSource { get; set; } = "manual";
 
-    public int Status { get; set; } = 1;
+    public int SalaryCompositionStatus { get; set; } = 1;
 
-    public string? TaxablePart { get; set; }
+    public string? SalaryCompositionTaxablePart { get; set; }
 
-    public string? TaxExemptPart { get; set; }
+    public string? SalaryCompositionTaxExemptPart { get; set; }
 }

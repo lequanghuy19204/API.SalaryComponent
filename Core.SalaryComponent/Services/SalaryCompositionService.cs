@@ -16,7 +16,7 @@ public class SalaryCompositionService : ISalaryCompositionService
 
     public async Task<Guid> CreateAsync(SalaryCompositionCreateDto dto)
     {
-        var isCodeExists = await _repository.IsCodeExistsAsync(dto.Code);
+        var isCodeExists = await _repository.IsCodeExistsAsync(dto.SalaryCompositionCode);
         if (isCodeExists)
         {
             throw new DuplicateException("Mã thành phần đã tồn tại");
@@ -48,7 +48,7 @@ public class SalaryCompositionService : ISalaryCompositionService
             throw NotFoundException.WithEntity("Thành phần lương", id);
         }
 
-        var isCodeExists = await _repository.IsCodeExistsAsync(dto.Code, id);
+        var isCodeExists = await _repository.IsCodeExistsAsync(dto.SalaryCompositionCode, id);
         if (isCodeExists)
         {
             throw new DuplicateException("Mã thành phần đã tồn tại");
