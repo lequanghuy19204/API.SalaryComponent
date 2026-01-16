@@ -15,8 +15,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ISalaryCompositionRepository, SalaryCompositionRepository>();
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<ISalaryCompositionSystemRepository, SalaryCompositionSystemRepository>();
+builder.Services.AddScoped<IGridConfigRepository, GridConfigRepository>();
 builder.Services.AddScoped<ISalaryCompositionService, SalaryCompositionService>();
 builder.Services.AddScoped<ISalaryCompositionSystemService, SalaryCompositionSystemService>();
+builder.Services.AddScoped<IGridConfigService, GridConfigService>();
 
 builder.Services.AddCors(options =>
 {
