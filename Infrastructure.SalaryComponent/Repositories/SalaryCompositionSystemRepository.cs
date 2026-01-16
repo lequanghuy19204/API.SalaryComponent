@@ -112,6 +112,70 @@ public class SalaryCompositionSystemRepository : ISalaryCompositionSystemReposit
         return result == null ? null : Guid.Parse(result);
     }
 
+    public async Task<PagedResultDto<SalaryCompositionSystemDto>> GetPagedAsync(int pageNumber, int pageSize, string? searchText = null, string? type = null)
+    {
+        using var connection = CreateConnection();
+
+        var whereClauses = new List<string>();
+        var parameters = new DynamicParameters();
+
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            whereClauses.Add("(salary_composition_system_code LIKE @SearchText OR salary_composition_system_name LIKE @SearchText)");
+            parameters.Add("SearchText", $"%{searchText}%");
+        }
+
+        if (!string.IsNullOrWhiteSpace(type))
+        {
+            whereClauses.Add("salary_composition_system_type = @Type");
+            parameters.Add("Type", type);
+        }
+
+        var whereClause = whereClauses.Count > 0 ? "WHERE " + string.Join(" AND ", whereClauses) : "";
+
+        var countSql = $"SELECT COUNT(1) FROM pa_salary_composition_system {whereClause}";
+        var totalRecords = await connection.ExecuteScalarAsync<int>(countSql, parameters);
+
+        var offset = (pageNumber - 1) * pageSize;
+        parameters.Add("Offset", offset);
+        parameters.Add("PageSize", pageSize);
+
+        var dataSql = $@"
+            SELECT 
+                salary_composition_system_id,
+                salary_composition_system_code,
+                salary_composition_system_name,
+                salary_composition_system_type,
+                salary_composition_system_nature,
+                salary_composition_system_tax_option,
+                salary_composition_system_tax_deduction,
+                salary_composition_system_quota,
+                salary_composition_system_allow_exceed_quota,
+                salary_composition_system_value_type,
+                salary_composition_system_value_calculation,
+                salary_composition_system_sum_scope,
+                salary_composition_system_org_level,
+                salary_composition_system_component_to_sum,
+                salary_composition_system_value_formula,
+                salary_composition_system_description,
+                salary_composition_system_show_on_payslip,
+                salary_composition_system_created_date
+            FROM pa_salary_composition_system 
+            {whereClause}
+            ORDER BY salary_composition_system_created_date DESC
+            LIMIT @PageSize OFFSET @Offset";
+
+        var results = await connection.QueryAsync<SalaryCompositionSystemEntity>(dataSql, parameters);
+
+        return new PagedResultDto<SalaryCompositionSystemDto>
+        {
+            Data = results.Select(MapToDto),
+            TotalRecords = totalRecords,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
+
     private static string ConvertShowOnPayslipToString(int value) => value switch
     {
         1 => "yes",

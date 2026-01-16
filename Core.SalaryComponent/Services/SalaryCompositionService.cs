@@ -83,4 +83,9 @@ public class SalaryCompositionService : ISalaryCompositionService
     {
         await _repository.BulkUpdateStatusAsync(ids, status);
     }
+
+    public async Task<PagedResultDto<SalaryCompositionDto>> GetPagedAsync(PagingRequestDto request)
+    {
+        return await _repository.GetPagedAsync(request);
+    }
 }

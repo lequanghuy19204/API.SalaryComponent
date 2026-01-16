@@ -312,6 +312,78 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         await connection.ExecuteAsync(sql, new { Ids = idStrings, Status = status });
     }
 
+    public async Task<PagedResultDto<SalaryCompositionDto>> GetPagedAsync(PagingRequestDto request)
+    {
+        using var connection = CreateConnection();
+
+        var whereClauses = new List<string>();
+        var parameters = new DynamicParameters();
+
+        if (!string.IsNullOrWhiteSpace(request.SearchText))
+        {
+            whereClauses.Add("(salary_composition_code LIKE @SearchText OR salary_composition_name LIKE @SearchText)");
+            parameters.Add("SearchText", $"%{request.SearchText}%");
+        }
+
+        if (request.Status.HasValue)
+        {
+            whereClauses.Add("salary_composition_status = @Status");
+            parameters.Add("Status", request.Status.Value);
+        }
+
+        var whereClause = whereClauses.Count > 0 ? "WHERE " + string.Join(" AND ", whereClauses) : "";
+
+        var countSql = $"SELECT COUNT(1) FROM pa_salary_composition {whereClause}";
+        var totalRecords = await connection.ExecuteScalarAsync<int>(countSql, parameters);
+
+        var offset = (request.PageNumber - 1) * request.PageSize;
+        parameters.Add("Offset", offset);
+        parameters.Add("PageSize", request.PageSize);
+
+        var dataSql = $@"
+            SELECT salary_composition_id, salary_composition_code, salary_composition_name,
+                   salary_composition_type, salary_composition_nature, salary_composition_tax_option,
+                   salary_composition_tax_deduction, salary_composition_quota, salary_composition_allow_exceed_quota,
+                   salary_composition_value_type, salary_composition_value_calculation, salary_composition_sum_scope,
+                   salary_composition_org_level, salary_composition_component_to_sum, salary_composition_value_formula,
+                   salary_composition_description, salary_composition_show_on_payslip, salary_composition_source,
+                   salary_composition_status, salary_composition_taxable_part, salary_composition_tax_exempt_part,
+                   salary_composition_created_date, salary_composition_modified_date
+            FROM pa_salary_composition 
+            {whereClause}
+            ORDER BY salary_composition_created_date DESC
+            LIMIT @PageSize OFFSET @Offset";
+
+        var results = await connection.QueryAsync<SalaryCompositionEntity>(dataSql, parameters);
+        var dtos = results.Select(MapToDto).ToList();
+
+        if (dtos.Count > 0)
+        {
+            var ids = dtos.Select(d => d.SalaryCompositionId.ToString()).ToList();
+            var orgSql = "SELECT salary_composition_id, organization_id FROM pa_salary_composition_organization WHERE salary_composition_id IN @Ids";
+            var orgMappings = await connection.QueryAsync<OrgMappingEntity>(orgSql, new { Ids = ids });
+            var orgDict = orgMappings
+                .GroupBy(x => x.SalaryCompositionId)
+                .ToDictionary(g => g.Key, g => g.Select(x => Guid.Parse(x.OrganizationId)).ToList());
+
+            foreach (var dto in dtos)
+            {
+                if (orgDict.TryGetValue(dto.SalaryCompositionId.ToString(), out var organizationIds))
+                {
+                    dto.OrganizationIds = organizationIds;
+                }
+            }
+        }
+
+        return new PagedResultDto<SalaryCompositionDto>
+        {
+            Data = dtos,
+            TotalRecords = totalRecords,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        };
+    }
+
     private static int ConvertShowOnPayslip(string value) => value switch
     {
         "yes" => 1,

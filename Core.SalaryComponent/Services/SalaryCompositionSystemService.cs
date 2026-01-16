@@ -111,4 +111,53 @@ public class SalaryCompositionSystemService : ISalaryCompositionSystemService
             OrganizationIds = new List<Guid> { rootOrgId }
         };
     }
+
+    public async Task<MoveMultipleResultDto> MoveMultipleToCompositionAsync(List<Guid> ids)
+    {
+        var result = new MoveMultipleResultDto
+        {
+            SuccessCount = 0,
+            FailedCount = 0,
+            SkippedCodes = new List<string>()
+        };
+
+        var rootOrgId = await _systemRepository.GetRootOrganizationIdAsync();
+        if (rootOrgId == null)
+        {
+            throw new InvalidOperationException("Không tìm thấy đơn vị gốc trong hệ thống");
+        }
+
+        foreach (var id in ids)
+        {
+            try
+            {
+                var systemItem = await _systemRepository.GetByIdAsync(id);
+                if (systemItem == null) continue;
+
+                var codeExists = await _systemRepository.IsCodeExistsInCompositionAsync(systemItem.SalaryCompositionSystemCode);
+                if (codeExists)
+                {
+                    result.SkippedCodes.Add(systemItem.SalaryCompositionSystemCode);
+                    result.FailedCount++;
+                    continue;
+                }
+
+                var createDto = BuildCreateDto(systemItem, rootOrgId.Value);
+                await _compositionRepository.CreateAsync(createDto);
+                await _systemRepository.DeleteAsync(id);
+                result.SuccessCount++;
+            }
+            catch
+            {
+                result.FailedCount++;
+            }
+        }
+
+        return result;
+    }
+
+    public async Task<PagedResultDto<SalaryCompositionSystemDto>> GetPagedAsync(int pageNumber, int pageSize, string? searchText = null, string? type = null)
+    {
+        return await _systemRepository.GetPagedAsync(pageNumber, pageSize, searchText, type);
+    }
 }

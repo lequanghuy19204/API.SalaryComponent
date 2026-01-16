@@ -26,6 +26,20 @@ public class SalaryCompositionSystemsController : ControllerBase
     }
 
     /// <summary>
+    /// Lấy danh sách thành phần lương hệ thống có phân trang
+    /// </summary>
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResultDto<SalaryCompositionSystemDto>>> GetPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 15,
+        [FromQuery] string? searchText = null,
+        [FromQuery] string? type = null)
+    {
+        var result = await _service.GetPagedAsync(pageNumber, pageSize, searchText, type);
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Lấy thành phần lương hệ thống theo ID
     /// </summary>
     [HttpGet("{id}")]
@@ -98,6 +112,23 @@ public class SalaryCompositionSystemsController : ControllerBase
                 Message = "Cập nhật thành phần lương thành công",
                 NewSalaryCompositionId = existingId
             });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Di chuyển nhiều thành phần lương vào danh sách sử dụng
+    /// </summary>
+    [HttpPost("move-multiple")]
+    public async Task<ActionResult<MoveMultipleResultDto>> MoveMultiple([FromBody] MoveMultipleRequestDto request)
+    {
+        try
+        {
+            var result = await _service.MoveMultipleToCompositionAsync(request.Ids);
+            return Ok(result);
         }
         catch (InvalidOperationException ex)
         {

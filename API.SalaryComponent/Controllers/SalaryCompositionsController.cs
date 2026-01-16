@@ -23,6 +23,13 @@ public class SalaryCompositionsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResultDto<SalaryCompositionDto>>> GetPaged([FromQuery] PagingRequestDto request)
+    {
+        var result = await _service.GetPagedAsync(request);
+        return Ok(result);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<SalaryCompositionDto>> GetById(Guid id)
     {
