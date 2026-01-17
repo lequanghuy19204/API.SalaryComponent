@@ -6,18 +6,33 @@ using Core.SalaryComponent.Interfaces.IRepository;
 
 namespace Infrastructure.SalaryComponent.Repositories;
 
+/// <summary>
+/// Repository truy xuất dữ liệu đơn vị/tổ chức từ database
+/// </summary>
 public class OrganizationRepository : IOrganizationRepository
 {
     private readonly string _connectionString;
 
+    /// <summary>
+    /// Khởi tạo repository với chuỗi kết nối
+    /// </summary>
+    /// <param name="configuration">Cấu hình ứng dụng chứa chuỗi kết nối</param>
     public OrganizationRepository(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string not found");
     }
 
+    /// <summary>
+    /// Tạo kết nối MySQL
+    /// </summary>
+    /// <returns>Đối tượng kết nối MySQL</returns>
     private MySqlConnection CreateConnection() => new MySqlConnection(_connectionString);
 
+    /// <summary>
+    /// Lấy cây đơn vị tổ chức theo cấu trúc phân cấp
+    /// </summary>
+    /// <returns>Danh sách cây đơn vị tổ chức</returns>
     public async Task<IEnumerable<OrganizationTreeDto>> GetTreeAsync()
     {
         using var connection = CreateConnection();
@@ -41,6 +56,13 @@ public class OrganizationRepository : IOrganizationRepository
         return BuildTree(allOrgs, parentDict, null);
     }
 
+    /// <summary>
+    /// Xây dựng cây từ danh sách phẳng
+    /// </summary>
+    /// <param name="allOrgs">Danh sách tất cả đơn vị dạng phẳng</param>
+    /// <param name="parentDict">Từ điển ánh xạ ID đơn vị với ID đơn vị cha</param>
+    /// <param name="parentId">ID đơn vị cha hiện tại</param>
+    /// <returns>Danh sách cây đơn vị con</returns>
     private static List<OrganizationTreeDto> BuildTree(
         List<OrganizationFlatDto> allOrgs, 
         Dictionary<string, string?> parentDict, 
@@ -57,12 +79,18 @@ public class OrganizationRepository : IOrganizationRepository
             .ToList();
     }
 
+    /// <summary>
+    /// DTO đơn vị dạng phẳng
+    /// </summary>
     private class OrganizationFlatDto
     {
         public string OrganizationId { get; set; } = string.Empty;
         public string OrganizationName { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// DTO ánh xạ quan hệ cha-con
+    /// </summary>
     private class ParentMappingDto
     {
         public string OrganizationId { get; set; } = string.Empty;

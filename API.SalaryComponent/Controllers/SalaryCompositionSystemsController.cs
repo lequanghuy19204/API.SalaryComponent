@@ -137,15 +137,39 @@ public class SalaryCompositionSystemsController : ControllerBase
     }
 }
 
+/// <summary>
+/// DTO kết quả kiểm tra tồn tại
+/// </summary>
 public class CheckExistsResultDto
 {
+    /// <summary>
+    /// Kết quả kiểm tra tồn tại (true nếu đã tồn tại)
+    /// </summary>
     public bool Exists { get; set; }
+    
+    /// <summary>
+    /// Mã thành phần lương
+    /// </summary>
     public string Code { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// DTO kết quả di chuyển
+/// </summary>
 public class MoveResultDto
 {
+    /// <summary>
+    /// Kết quả di chuyển (true nếu thành công)
+    /// </summary>
     public bool Success { get; set; }
+    
+    /// <summary>
+    /// Thông báo kết quả
+    /// </summary>
     public string Message { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// ID thành phần lương mới được tạo
+    /// </summary>
     public Guid NewSalaryCompositionId { get; set; }
 }

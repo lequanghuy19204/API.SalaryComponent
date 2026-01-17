@@ -4,11 +4,19 @@ using Core.SalaryComponent.Interfaces.IServices;
 
 namespace Core.SalaryComponent.Services;
 
+/// <summary>
+/// Service xử lý nghiệp vụ thành phần lương mặc định của hệ thống
+/// </summary>
 public class SalaryCompositionSystemService : ISalaryCompositionSystemService
 {
     private readonly ISalaryCompositionSystemRepository _systemRepository;
     private readonly ISalaryCompositionRepository _compositionRepository;
 
+    /// <summary>
+    /// Khởi tạo service với các repository
+    /// </summary>
+    /// <param name="systemRepository">Repository thành phần lương hệ thống</param>
+    /// <param name="compositionRepository">Repository thành phần lương đang sử dụng</param>
     public SalaryCompositionSystemService(
         ISalaryCompositionSystemRepository systemRepository,
         ISalaryCompositionRepository compositionRepository)
@@ -17,16 +25,31 @@ public class SalaryCompositionSystemService : ISalaryCompositionSystemService
         _compositionRepository = compositionRepository;
     }
 
+    /// <summary>
+    /// Lấy tất cả thành phần lương hệ thống
+    /// </summary>
+    /// <returns>Danh sách thành phần lương hệ thống</returns>
     public async Task<IEnumerable<SalaryCompositionSystemDto>> GetAllAsync()
     {
         return await _systemRepository.GetAllAsync();
     }
 
+    /// <summary>
+    /// Lấy thành phần lương hệ thống theo ID
+    /// </summary>
+    /// <param name="id">ID thành phần lương hệ thống</param>
+    /// <returns>Thông tin thành phần lương hệ thống</returns>
     public async Task<SalaryCompositionSystemDto?> GetByIdAsync(Guid id)
     {
         return await _systemRepository.GetByIdAsync(id);
     }
 
+    /// <summary>
+    /// Kiểm tra mã đã tồn tại trong danh sách sử dụng
+    /// </summary>
+    /// <param name="id">ID thành phần lương hệ thống</param>
+    /// <returns>True nếu mã đã tồn tại, False nếu chưa</returns>
+    /// <exception cref="InvalidOperationException">Ném ra khi không tìm thấy thành phần lương hệ thống</exception>
     public async Task<bool> CheckCodeExistsAsync(Guid id)
     {
         var systemItem = await _systemRepository.GetByIdAsync(id);
@@ -38,6 +61,12 @@ public class SalaryCompositionSystemService : ISalaryCompositionSystemService
         return await _systemRepository.IsCodeExistsInCompositionAsync(systemItem.SalaryCompositionSystemCode);
     }
 
+    /// <summary>
+    /// Di chuyển từ hệ thống sang danh sách sử dụng
+    /// </summary>
+    /// <param name="id">ID thành phần lương hệ thống</param>
+    /// <returns>ID của thành phần lương mới trong danh sách sử dụng</returns>
+    /// <exception cref="InvalidOperationException">Ném ra khi không tìm thấy thành phần lương hoặc đơn vị gốc</exception>
     public async Task<Guid> MoveToCompositionAsync(Guid id)
     {
         var systemItem = await _systemRepository.GetByIdAsync(id);
@@ -59,6 +88,12 @@ public class SalaryCompositionSystemService : ISalaryCompositionSystemService
         return newId;
     }
 
+    /// <summary>
+    /// Ghi đè thành phần lương đã tồn tại
+    /// </summary>
+    /// <param name="id">ID thành phần lương hệ thống</param>
+    /// <returns>ID của thành phần lương đã được ghi đè</returns>
+    /// <exception cref="InvalidOperationException">Ném ra khi không tìm thấy thành phần lương cần ghi đè hoặc đơn vị gốc</exception>
     public async Task<Guid> OverwriteToCompositionAsync(Guid id)
     {
         var systemItem = await _systemRepository.GetByIdAsync(id);
@@ -86,6 +121,12 @@ public class SalaryCompositionSystemService : ISalaryCompositionSystemService
         return existingId.Value;
     }
 
+    /// <summary>
+    /// Xây dựng DTO tạo mới từ dữ liệu hệ thống
+    /// </summary>
+    /// <param name="systemItem">Thành phần lương hệ thống</param>
+    /// <param name="rootOrgId">ID đơn vị gốc</param>
+    /// <returns>DTO tạo mới thành phần lương</returns>
     private static SalaryCompositionCreateDto BuildCreateDto(SalaryCompositionSystemDto systemItem, Guid rootOrgId)
     {
         return new SalaryCompositionCreateDto
@@ -112,6 +153,12 @@ public class SalaryCompositionSystemService : ISalaryCompositionSystemService
         };
     }
 
+    /// <summary>
+    /// Di chuyển nhiều thành phần lương
+    /// </summary>
+    /// <param name="ids">Danh sách ID thành phần lương hệ thống</param>
+    /// <returns>Kết quả di chuyển gồm số lượng thành công, thất bại và các mã bị bỏ qua</returns>
+    /// <exception cref="InvalidOperationException">Ném ra khi không tìm thấy đơn vị gốc</exception>
     public async Task<MoveMultipleResultDto> MoveMultipleToCompositionAsync(List<Guid> ids)
     {
         var result = new MoveMultipleResultDto
@@ -156,6 +203,14 @@ public class SalaryCompositionSystemService : ISalaryCompositionSystemService
         return result;
     }
 
+    /// <summary>
+    /// Lấy danh sách có phân trang
+    /// </summary>
+    /// <param name="pageNumber">Số trang</param>
+    /// <param name="pageSize">Số lượng bản ghi mỗi trang</param>
+    /// <param name="searchText">Văn bản tìm kiếm</param>
+    /// <param name="type">Loại thành phần lương</param>
+    /// <returns>Kết quả phân trang</returns>
     public async Task<PagedResultDto<SalaryCompositionSystemDto>> GetPagedAsync(int pageNumber, int pageSize, string? searchText = null, string? type = null)
     {
         return await _systemRepository.GetPagedAsync(pageNumber, pageSize, searchText, type);

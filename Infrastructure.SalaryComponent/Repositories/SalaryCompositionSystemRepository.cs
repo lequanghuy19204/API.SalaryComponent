@@ -6,18 +6,33 @@ using Core.SalaryComponent.Interfaces.IRepository;
 
 namespace Infrastructure.SalaryComponent.Repositories;
 
+/// <summary>
+/// Repository truy xuất dữ liệu thành phần lương hệ thống từ database
+/// </summary>
 public class SalaryCompositionSystemRepository : ISalaryCompositionSystemRepository
 {
     private readonly string _connectionString;
 
+    /// <summary>
+    /// Khởi tạo repository với chuỗi kết nối
+    /// </summary>
+    /// <param name="configuration">Cấu hình ứng dụng chứa chuỗi kết nối</param>
     public SalaryCompositionSystemRepository(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string not found");
     }
 
+    /// <summary>
+    /// Tạo kết nối MySQL
+    /// </summary>
+    /// <returns>Đối tượng kết nối MySQL</returns>
     private MySqlConnection CreateConnection() => new MySqlConnection(_connectionString);
 
+    /// <summary>
+    /// Lấy tất cả thành phần lương hệ thống
+    /// </summary>
+    /// <returns>Danh sách tất cả thành phần lương hệ thống</returns>
     public async Task<IEnumerable<SalaryCompositionSystemDto>> GetAllAsync()
     {
         using var connection = CreateConnection();
@@ -49,6 +64,11 @@ public class SalaryCompositionSystemRepository : ISalaryCompositionSystemReposit
         return results.Select(MapToDto);
     }
 
+    /// <summary>
+    /// Lấy thành phần lương hệ thống theo ID
+    /// </summary>
+    /// <param name="id">ID thành phần lương hệ thống</param>
+    /// <returns>DTO thành phần lương hệ thống hoặc null nếu không tìm thấy</returns>
     public async Task<SalaryCompositionSystemDto?> GetByIdAsync(Guid id)
     {
         using var connection = CreateConnection();
@@ -80,6 +100,11 @@ public class SalaryCompositionSystemRepository : ISalaryCompositionSystemReposit
         return result == null ? null : MapToDto(result);
     }
 
+    /// <summary>
+    /// Xóa thành phần lương hệ thống
+    /// </summary>
+    /// <param name="id">ID thành phần lương hệ thống cần xóa</param>
+    /// <returns>True nếu xóa thành công</returns>
     public async Task<bool> DeleteAsync(Guid id)
     {
         using var connection = CreateConnection();
@@ -88,6 +113,10 @@ public class SalaryCompositionSystemRepository : ISalaryCompositionSystemReposit
         return affected > 0;
     }
 
+    /// <summary>
+    /// Lấy ID đơn vị gốc (parent_id = NULL)
+    /// </summary>
+    /// <returns>ID đơn vị gốc hoặc null nếu không tìm thấy</returns>
     public async Task<Guid?> GetRootOrganizationIdAsync()
     {
         using var connection = CreateConnection();
@@ -96,6 +125,11 @@ public class SalaryCompositionSystemRepository : ISalaryCompositionSystemReposit
         return result == null ? null : Guid.Parse(result);
     }
 
+    /// <summary>
+    /// Kiểm tra mã đã tồn tại trong pa_salary_composition
+    /// </summary>
+    /// <param name="code">Mã cần kiểm tra</param>
+    /// <returns>True nếu mã đã tồn tại</returns>
     public async Task<bool> IsCodeExistsInCompositionAsync(string code)
     {
         using var connection = CreateConnection();
@@ -104,6 +138,11 @@ public class SalaryCompositionSystemRepository : ISalaryCompositionSystemReposit
         return count > 0;
     }
 
+    /// <summary>
+    /// Lấy ID thành phần lương theo mã
+    /// </summary>
+    /// <param name="code">Mã thành phần lương</param>
+    /// <returns>ID thành phần lương hoặc null nếu không tìm thấy</returns>
     public async Task<Guid?> GetCompositionIdByCodeAsync(string code)
     {
         using var connection = CreateConnection();
@@ -112,6 +151,14 @@ public class SalaryCompositionSystemRepository : ISalaryCompositionSystemReposit
         return result == null ? null : Guid.Parse(result);
     }
 
+    /// <summary>
+    /// Lấy danh sách có phân trang
+    /// </summary>
+    /// <param name="pageNumber">Số trang</param>
+    /// <param name="pageSize">Kích thước trang</param>
+    /// <param name="searchText">Từ khóa tìm kiếm</param>
+    /// <param name="type">Loại thành phần lương</param>
+    /// <returns>Kết quả phân trang thành phần lương hệ thống</returns>
     public async Task<PagedResultDto<SalaryCompositionSystemDto>> GetPagedAsync(int pageNumber, int pageSize, string? searchText = null, string? type = null)
     {
         using var connection = CreateConnection();
@@ -176,6 +223,11 @@ public class SalaryCompositionSystemRepository : ISalaryCompositionSystemReposit
         };
     }
 
+    /// <summary>
+    /// Chuyển đổi giá trị hiển thị phiếu lương
+    /// </summary>
+    /// <param name="value">Giá trị số</param>
+    /// <returns>Giá trị chuỗi tương ứng</returns>
     private static string ConvertShowOnPayslipToString(int value) => value switch
     {
         1 => "yes",
@@ -184,6 +236,11 @@ public class SalaryCompositionSystemRepository : ISalaryCompositionSystemReposit
         _ => "yes"
     };
 
+    /// <summary>
+    /// Chuyển đổi entity sang DTO
+    /// </summary>
+    /// <param name="entity">Entity cần chuyển đổi</param>
+    /// <returns>DTO thành phần lương hệ thống</returns>
     private static SalaryCompositionSystemDto MapToDto(SalaryCompositionSystemEntity entity)
     {
         return new SalaryCompositionSystemDto
@@ -209,6 +266,9 @@ public class SalaryCompositionSystemRepository : ISalaryCompositionSystemReposit
         };
     }
 
+    /// <summary>
+    /// Entity ánh xạ với bảng pa_salary_composition_system
+    /// </summary>
     private class SalaryCompositionSystemEntity
     {
         public string SalaryCompositionSystemId { get; set; } = string.Empty;

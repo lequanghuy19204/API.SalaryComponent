@@ -4,6 +4,9 @@ using Core.SalaryComponent.Interfaces.IRepository;
 
 namespace API.SalaryComponent.Controllers;
 
+/// <summary>
+/// Controller quản lý đơn vị/tổ chức
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class OrganizationsController : ControllerBase
@@ -15,6 +18,10 @@ public class OrganizationsController : ControllerBase
         _repository = repository;
     }
 
+    /// <summary>
+    /// Lấy cây đơn vị tổ chức
+    /// </summary>
+    /// <returns>Danh sách đơn vị tổ chức dạng cây</returns>
     [HttpGet("tree")]
     public async Task<ActionResult<IEnumerable<OrganizationTreeDto>>> GetTree()
     {

@@ -6,18 +6,34 @@ using Core.SalaryComponent.Interfaces.IRepository;
 
 namespace Infrastructure.SalaryComponent.Repositories;
 
+/// <summary>
+/// Repository truy xuất dữ liệu cấu hình lưới từ database
+/// </summary>
 public class GridConfigRepository : IGridConfigRepository
 {
     private readonly string _connectionString;
 
+    /// <summary>
+    /// Khởi tạo repository với chuỗi kết nối
+    /// </summary>
+    /// <param name="configuration">Cấu hình ứng dụng chứa chuỗi kết nối</param>
     public GridConfigRepository(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection") 
             ?? throw new InvalidOperationException("Connection string not found");
     }
 
+    /// <summary>
+    /// Tạo kết nối MySQL
+    /// </summary>
+    /// <returns>Đối tượng kết nối MySQL</returns>
     private MySqlConnection CreateConnection() => new MySqlConnection(_connectionString);
 
+    /// <summary>
+    /// Lấy danh sách cấu hình lưới theo tên
+    /// </summary>
+    /// <param name="gridName">Tên lưới cần lấy cấu hình</param>
+    /// <returns>Danh sách cấu hình lưới</returns>
     public async Task<IEnumerable<GridConfigDto>> GetByNameAsync(string gridName)
     {
         using var connection = CreateConnection();
@@ -34,6 +50,10 @@ public class GridConfigRepository : IGridConfigRepository
         return results.Select(MapToDto);
     }
 
+    /// <summary>
+    /// Lưu cấu hình lưới (xóa cũ và thêm mới theo transaction)
+    /// </summary>
+    /// <param name="dto">DTO chứa thông tin cấu hình lưới cần lưu</param>
     public async Task SaveAsync(GridConfigSaveDto dto)
     {
         using var connection = CreateConnection();
@@ -81,6 +101,10 @@ public class GridConfigRepository : IGridConfigRepository
         }
     }
 
+    /// <summary>
+    /// Xóa cấu hình lưới theo tên
+    /// </summary>
+    /// <param name="gridName">Tên lưới cần xóa cấu hình</param>
     public async Task DeleteByNameAsync(string gridName)
     {
         using var connection = CreateConnection();
@@ -89,6 +113,11 @@ public class GridConfigRepository : IGridConfigRepository
             new { Name = gridName });
     }
 
+    /// <summary>
+    /// Chuyển đổi entity sang DTO
+    /// </summary>
+    /// <param name="entity">Entity cần chuyển đổi</param>
+    /// <returns>DTO cấu hình lưới</returns>
     private static GridConfigDto MapToDto(GridConfigEntity entity)
     {
         return new GridConfigDto
@@ -103,6 +132,9 @@ public class GridConfigRepository : IGridConfigRepository
         };
     }
 
+    /// <summary>
+    /// Entity ánh xạ với bảng pa_grid_config
+    /// </summary>
     private class GridConfigEntity
     {
         public string GridConfigId { get; set; } = string.Empty;

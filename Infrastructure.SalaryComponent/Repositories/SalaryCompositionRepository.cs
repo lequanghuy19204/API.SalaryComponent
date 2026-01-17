@@ -6,18 +6,34 @@ using Core.SalaryComponent.Interfaces.IRepository;
 
 namespace Infrastructure.SalaryComponent.Repositories;
 
+/// <summary>
+/// Repository truy xuất dữ liệu thành phần lương từ database
+/// </summary>
 public class SalaryCompositionRepository : ISalaryCompositionRepository
 {
     private readonly string _connectionString;
 
+    /// <summary>
+    /// Khởi tạo repository với chuỗi kết nối
+    /// </summary>
+    /// <param name="configuration">Cấu hình ứng dụng chứa chuỗi kết nối</param>
     public SalaryCompositionRepository(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection") 
             ?? throw new InvalidOperationException("Connection string not found");
     }
 
+    /// <summary>
+    /// Tạo kết nối MySQL
+    /// </summary>
+    /// <returns>Đối tượng kết nối MySQL</returns>
     private MySqlConnection CreateConnection() => new MySqlConnection(_connectionString);
 
+    /// <summary>
+    /// Tạo mới thành phần lương và liên kết với đơn vị
+    /// </summary>
+    /// <param name="dto">DTO chứa thông tin thành phần lương cần tạo</param>
+    /// <returns>ID của thành phần lương vừa tạo</returns>
     public async Task<Guid> CreateAsync(SalaryCompositionCreateDto dto)
     {
         using var connection = CreateConnection();
@@ -99,6 +115,11 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         }
     }
 
+    /// <summary>
+    /// Lấy thành phần lương theo ID kèm danh sách đơn vị
+    /// </summary>
+    /// <param name="id">ID thành phần lương</param>
+    /// <returns>DTO thành phần lương hoặc null nếu không tìm thấy</returns>
     public async Task<SalaryCompositionDto?> GetByIdAsync(Guid id)
     {
         using var connection = CreateConnection();
@@ -127,6 +148,10 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         return dto;
     }
 
+    /// <summary>
+    /// Lấy tất cả thành phần lương kèm danh sách đơn vị
+    /// </summary>
+    /// <returns>Danh sách tất cả thành phần lương</returns>
     public async Task<IEnumerable<SalaryCompositionDto>> GetAllAsync()
     {
         using var connection = CreateConnection();
@@ -163,6 +188,12 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         return dtos;
     }
 
+    /// <summary>
+    /// Cập nhật thành phần lương và cập nhật lại liên kết đơn vị
+    /// </summary>
+    /// <param name="id">ID thành phần lương cần cập nhật</param>
+    /// <param name="dto">DTO chứa thông tin cập nhật</param>
+    /// <returns>True nếu cập nhật thành công</returns>
     public async Task<bool> UpdateAsync(Guid id, SalaryCompositionCreateDto dto)
     {
         using var connection = CreateConnection();
@@ -257,6 +288,11 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         }
     }
 
+    /// <summary>
+    /// Xóa thành phần lương và các liên kết
+    /// </summary>
+    /// <param name="id">ID thành phần lương cần xóa</param>
+    /// <returns>True nếu xóa thành công</returns>
     public async Task<bool> DeleteAsync(Guid id)
     {
         using var connection = CreateConnection();
@@ -282,6 +318,12 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         }
     }
 
+    /// <summary>
+    /// Kiểm tra mã thành phần lương đã tồn tại
+    /// </summary>
+    /// <param name="code">Mã cần kiểm tra</param>
+    /// <param name="excludeId">ID cần loại trừ khi kiểm tra (dùng khi cập nhật)</param>
+    /// <returns>True nếu mã đã tồn tại</returns>
     public async Task<bool> IsCodeExistsAsync(string code, Guid? excludeId = null)
     {
         using var connection = CreateConnection();
@@ -294,6 +336,12 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         return count > 0;
     }
 
+    /// <summary>
+    /// Cập nhật trạng thái một thành phần lương
+    /// </summary>
+    /// <param name="id">ID thành phần lương</param>
+    /// <param name="status">Trạng thái mới</param>
+    /// <returns>True nếu cập nhật thành công</returns>
     public async Task<bool> UpdateStatusAsync(Guid id, int status)
     {
         using var connection = CreateConnection();
@@ -302,6 +350,11 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         return affected > 0;
     }
 
+    /// <summary>
+    /// Cập nhật trạng thái hàng loạt
+    /// </summary>
+    /// <param name="ids">Danh sách ID thành phần lương cần cập nhật</param>
+    /// <param name="status">Trạng thái mới</param>
     public async Task BulkUpdateStatusAsync(List<Guid> ids, int status)
     {
         if (ids.Count == 0) return;
@@ -312,6 +365,11 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         await connection.ExecuteAsync(sql, new { Ids = idStrings, Status = status });
     }
 
+    /// <summary>
+    /// Lấy danh sách có phân trang với bộ lọc
+    /// </summary>
+    /// <param name="request">Yêu cầu phân trang và bộ lọc</param>
+    /// <returns>Kết quả phân trang thành phần lương</returns>
     public async Task<PagedResultDto<SalaryCompositionDto>> GetPagedAsync(PagingRequestDto request)
     {
         using var connection = CreateConnection();
@@ -396,6 +454,11 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         };
     }
 
+    /// <summary>
+    /// Chuyển đổi giá trị hiển thị phiếu lương từ chuỗi sang số
+    /// </summary>
+    /// <param name="value">Giá trị chuỗi</param>
+    /// <returns>Giá trị số tương ứng</returns>
     private static int ConvertShowOnPayslip(string value) => value switch
     {
         "yes" => 1,
@@ -404,6 +467,11 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         _ => 1
     };
 
+    /// <summary>
+    /// Chuyển đổi giá trị hiển thị phiếu lương từ số sang chuỗi
+    /// </summary>
+    /// <param name="value">Giá trị số</param>
+    /// <returns>Giá trị chuỗi tương ứng</returns>
     private static string ConvertShowOnPayslipToString(int value) => value switch
     {
         1 => "yes",
@@ -412,6 +480,11 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         _ => "yes"
     };
 
+    /// <summary>
+    /// Chuyển đổi nguồn từ số sang chuỗi
+    /// </summary>
+    /// <param name="value">Giá trị số</param>
+    /// <returns>Giá trị chuỗi tương ứng</returns>
     private static string ConvertSourceToString(int value) => value switch
     {
         1 => "system",
@@ -419,6 +492,11 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         _ => "manual"
     };
 
+    /// <summary>
+    /// Chuyển đổi entity sang DTO
+    /// </summary>
+    /// <param name="entity">Entity cần chuyển đổi</param>
+    /// <returns>DTO thành phần lương</returns>
     private static SalaryCompositionDto MapToDto(SalaryCompositionEntity entity)
     {
         return new SalaryCompositionDto
@@ -449,6 +527,9 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         };
     }
 
+    /// <summary>
+    /// Entity ánh xạ với bảng pa_salary_composition
+    /// </summary>
     private class SalaryCompositionEntity
     {
         public string SalaryCompositionId { get; set; } = string.Empty;
@@ -476,6 +557,9 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
         public DateTime SalaryCompositionModifiedDate { get; set; }
     }
 
+    /// <summary>
+    /// Entity ánh xạ liên kết thành phần lương với đơn vị
+    /// </summary>
     private class OrgMappingEntity
     {
         public string SalaryCompositionId { get; set; } = string.Empty;

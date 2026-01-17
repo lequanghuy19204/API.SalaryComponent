@@ -4,6 +4,9 @@ using Core.SalaryComponent.Interfaces.IServices;
 
 namespace API.SalaryComponent.Controllers;
 
+/// <summary>
+/// Controller quản lý cấu hình lưới (Grid Config)
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class GridConfigsController : ControllerBase
@@ -15,6 +18,11 @@ public class GridConfigsController : ControllerBase
         _service = service;
     }
 
+    /// <summary>
+    /// Lấy cấu hình lưới theo tên
+    /// </summary>
+    /// <param name="gridName">Tên của lưới cần lấy cấu hình</param>
+    /// <returns>Danh sách cấu hình lưới</returns>
     [HttpGet("{gridName}")]
     public async Task<ActionResult<IEnumerable<GridConfigDto>>> GetByName(string gridName)
     {
@@ -22,6 +30,11 @@ public class GridConfigsController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Lưu cấu hình lưới
+    /// </summary>
+    /// <param name="dto">Dữ liệu cấu hình lưới cần lưu</param>
+    /// <returns>NoContent nếu lưu thành công</returns>
     [HttpPost]
     public async Task<ActionResult> Save([FromBody] GridConfigSaveDto dto)
     {
@@ -34,6 +47,11 @@ public class GridConfigsController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Xóa cấu hình lưới theo tên
+    /// </summary>
+    /// <param name="gridName">Tên của lưới cần xóa cấu hình</param>
+    /// <returns>NoContent nếu xóa thành công</returns>
     [HttpDelete("{gridName}")]
     public async Task<ActionResult> Delete(string gridName)
     {
