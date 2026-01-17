@@ -94,12 +94,19 @@ public class SalaryCompositionsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id)
     {
-        var result = await _service.DeleteAsync(id);
-        if (!result)
+        try
         {
-            return NotFound(new { message = "Không tìm thấy thành phần lương" });
+            var result = await _service.DeleteAsync(id);
+            if (!result)
+            {
+                return NotFound(new { message = "Không tìm thấy thành phần lương" });
+            }
+            return NoContent();
         }
-        return NoContent();
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpPatch("{id}/status")]

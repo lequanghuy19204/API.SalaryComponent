@@ -65,6 +65,12 @@ public class SalaryCompositionService : ISalaryCompositionService
             throw NotFoundException.WithEntity("Thành phần lương", id);
         }
 
+        // Không cho phép xóa thành phần lương mặc định của hệ thống
+        if (existing.SalaryCompositionSource == "system")
+        {
+            throw new InvalidOperationException("Đây là thành phần lương mặc định của hệ thống nên không thể xóa. Vui lòng kiểm tra lại.");
+        }
+
         return await _repository.DeleteAsync(id);
     }
 
