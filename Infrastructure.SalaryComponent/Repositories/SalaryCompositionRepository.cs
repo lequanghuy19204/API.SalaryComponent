@@ -331,6 +331,18 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
             parameters.Add("Status", request.Status.Value);
         }
 
+        // Filter by organization IDs - find salary compositions that belong to any of the selected organizations
+        if (request.OrganizationIds != null && request.OrganizationIds.Count > 0)
+        {
+            var orgIdStrings = request.OrganizationIds.Select(id => id.ToString()).ToList();
+            whereClauses.Add(@"salary_composition_id IN (
+                SELECT DISTINCT salary_composition_id 
+                FROM pa_salary_composition_organization 
+                WHERE organization_id IN @OrganizationIds
+            )");
+            parameters.Add("OrganizationIds", orgIdStrings);
+        }
+
         var whereClause = whereClauses.Count > 0 ? "WHERE " + string.Join(" AND ", whereClauses) : "";
 
         var countSql = $"SELECT COUNT(1) FROM pa_salary_composition {whereClause}";
