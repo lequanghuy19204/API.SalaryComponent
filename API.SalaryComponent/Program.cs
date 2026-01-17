@@ -2,6 +2,7 @@ using Core.SalaryComponent.Interfaces.IRepository;
 using Core.SalaryComponent.Interfaces.IServices;
 using Core.SalaryComponent.Services;
 using Infrastructure.SalaryComponent.Repositories;
+using API.SalaryComponent.Middlewares;
 using Dapper;
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -38,6 +39,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseExceptionHandling();
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 app.UseAuthorization();

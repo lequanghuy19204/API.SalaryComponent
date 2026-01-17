@@ -4,6 +4,9 @@ using Core.SalaryComponent.Interfaces.IServices;
 
 namespace API.SalaryComponent.Controllers;
 
+/// <summary>
+/// Controller quản lý thành phần lương mặc định của hệ thống
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class SalaryCompositionSystemsController : ControllerBase
@@ -59,20 +62,13 @@ public class SalaryCompositionSystemsController : ControllerBase
     [HttpGet("{id}/check-exists")]
     public async Task<ActionResult<CheckExistsResultDto>> CheckExists(Guid id)
     {
-        try
+        var exists = await _service.CheckCodeExistsAsync(id);
+        var systemItem = await _service.GetByIdAsync(id);
+        return Ok(new CheckExistsResultDto
         {
-            var exists = await _service.CheckCodeExistsAsync(id);
-            var systemItem = await _service.GetByIdAsync(id);
-            return Ok(new CheckExistsResultDto
-            {
-                Exists = exists,
-                Code = systemItem?.SalaryCompositionSystemCode ?? ""
-            });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+            Exists = exists,
+            Code = systemItem?.SalaryCompositionSystemCode ?? ""
+        });
     }
 
     /// <summary>
@@ -81,20 +77,13 @@ public class SalaryCompositionSystemsController : ControllerBase
     [HttpPost("{id}/move")]
     public async Task<ActionResult<MoveResultDto>> Move(Guid id)
     {
-        try
+        var newId = await _service.MoveToCompositionAsync(id);
+        return Ok(new MoveResultDto
         {
-            var newId = await _service.MoveToCompositionAsync(id);
-            return Ok(new MoveResultDto
-            {
-                Success = true,
-                Message = "Di chuyển thành phần lương thành công",
-                NewSalaryCompositionId = newId
-            });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+            Success = true,
+            Message = "Di chuyển thành phần lương thành công",
+            NewSalaryCompositionId = newId
+        });
     }
 
     /// <summary>
@@ -103,20 +92,13 @@ public class SalaryCompositionSystemsController : ControllerBase
     [HttpPost("{id}/overwrite")]
     public async Task<ActionResult<MoveResultDto>> Overwrite(Guid id)
     {
-        try
+        var existingId = await _service.OverwriteToCompositionAsync(id);
+        return Ok(new MoveResultDto
         {
-            var existingId = await _service.OverwriteToCompositionAsync(id);
-            return Ok(new MoveResultDto
-            {
-                Success = true,
-                Message = "Cập nhật thành phần lương thành công",
-                NewSalaryCompositionId = existingId
-            });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+            Success = true,
+            Message = "Cập nhật thành phần lương thành công",
+            NewSalaryCompositionId = existingId
+        });
     }
 
     /// <summary>
@@ -125,15 +107,8 @@ public class SalaryCompositionSystemsController : ControllerBase
     [HttpPost("move-multiple")]
     public async Task<ActionResult<MoveMultipleResultDto>> MoveMultiple([FromBody] MoveMultipleRequestDto request)
     {
-        try
-        {
-            var result = await _service.MoveMultipleToCompositionAsync(request.Ids);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var result = await _service.MoveMultipleToCompositionAsync(request.Ids);
+        return Ok(result);
     }
 }
 
