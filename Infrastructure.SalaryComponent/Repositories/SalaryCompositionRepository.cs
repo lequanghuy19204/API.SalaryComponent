@@ -428,7 +428,7 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
             SalaryCompositionName = entity.SalaryCompositionName,
             SalaryCompositionType = entity.SalaryCompositionType,
             SalaryCompositionNature = entity.SalaryCompositionNature,
-            SalaryCompositionTaxOption = entity.SalaryCompositionTaxOption ?? "taxable",
+            SalaryCompositionTaxOption = entity.SalaryCompositionTaxOption,
             SalaryCompositionTaxDeduction = entity.SalaryCompositionTaxDeduction,
             SalaryCompositionQuota = entity.SalaryCompositionQuota,
             SalaryCompositionAllowExceedQuota = entity.SalaryCompositionAllowExceedQuota,

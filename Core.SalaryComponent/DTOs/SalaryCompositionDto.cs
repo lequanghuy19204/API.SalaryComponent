@@ -8,7 +8,7 @@ public class SalaryCompositionDto
     public List<Guid> OrganizationIds { get; set; } = new();
     public string SalaryCompositionType { get; set; } = string.Empty;
     public string SalaryCompositionNature { get; set; } = "income";
-    public string SalaryCompositionTaxOption { get; set; } = "taxable";
+    public string? SalaryCompositionTaxOption { get; set; }
     public bool SalaryCompositionTaxDeduction { get; set; }
     public string? SalaryCompositionQuota { get; set; }
     public bool SalaryCompositionAllowExceedQuota { get; set; }
