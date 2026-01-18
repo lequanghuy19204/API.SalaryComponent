@@ -53,12 +53,9 @@ public interface ISalaryCompositionSystemRepository
     Task<Guid?> GetCompositionIdByCodeAsync(string code);
 
     /// <summary>
-    /// Lấy danh sách thành phần lương hệ thống có phân trang
+    /// Lấy danh sách thành phần lương hệ thống có phân trang với bộ lọc nâng cao
     /// </summary>
-    /// <param name="pageNumber">Số trang</param>
-    /// <param name="pageSize">Số bản ghi mỗi trang</param>
-    /// <param name="searchText">Từ khóa tìm kiếm</param>
-    /// <param name="type">Loại thành phần lương</param>
-    /// <returns>Kết quả phân trang</returns>
-    Task<PagedResultDto<SalaryCompositionSystemDto>> GetPagedAsync(int pageNumber, int pageSize, string? searchText = null, string? type = null);
+    /// <param name="request">DTO chứa thông tin phân trang và bộ lọc</param>
+    /// <returns>Kết quả phân trang thành phần lương hệ thống</returns>
+    Task<PagedResultDto<SalaryCompositionSystemDto>> GetPagedAsync(SystemPagingRequestDto request);
 }

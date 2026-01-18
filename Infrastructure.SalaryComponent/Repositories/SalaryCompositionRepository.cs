@@ -401,6 +401,165 @@ public class SalaryCompositionRepository : ISalaryCompositionRepository
             parameters.Add("OrganizationIds", orgIdStrings);
         }
 
+        // Helper method để build SQL condition dựa trên FilterConditionDto
+        void AddFilterCondition(FilterConditionDto? filter, string columnName, string paramName)
+        {
+            if (filter == null) return;
+            
+            switch (filter.Condition)
+            {
+                case "contains":
+                    if (!string.IsNullOrWhiteSpace(filter.Value))
+                    {
+                        whereClauses.Add($"{columnName} LIKE @{paramName}");
+                        parameters.Add(paramName, $"%{filter.Value}%");
+                    }
+                    break;
+                case "notContains":
+                    if (!string.IsNullOrWhiteSpace(filter.Value))
+                    {
+                        whereClauses.Add($"({columnName} NOT LIKE @{paramName} OR {columnName} IS NULL)");
+                        parameters.Add(paramName, $"%{filter.Value}%");
+                    }
+                    break;
+                case "equals":
+                    if (!string.IsNullOrWhiteSpace(filter.Value))
+                    {
+                        whereClauses.Add($"{columnName} = @{paramName}");
+                        parameters.Add(paramName, filter.Value);
+                    }
+                    break;
+                case "notEquals":
+                    if (!string.IsNullOrWhiteSpace(filter.Value))
+                    {
+                        whereClauses.Add($"({columnName} != @{paramName} OR {columnName} IS NULL)");
+                        parameters.Add(paramName, filter.Value);
+                    }
+                    break;
+                case "startsWith":
+                    if (!string.IsNullOrWhiteSpace(filter.Value))
+                    {
+                        whereClauses.Add($"{columnName} LIKE @{paramName}");
+                        parameters.Add(paramName, $"{filter.Value}%");
+                    }
+                    break;
+                case "endsWith":
+                    if (!string.IsNullOrWhiteSpace(filter.Value))
+                    {
+                        whereClauses.Add($"{columnName} LIKE @{paramName}");
+                        parameters.Add(paramName, $"%{filter.Value}");
+                    }
+                    break;
+                case "empty":
+                    whereClauses.Add($"({columnName} IS NULL OR {columnName} = '')");
+                    break;
+                case "notEmpty":
+                    whereClauses.Add($"({columnName} IS NOT NULL AND {columnName} != '')");
+                    break;
+            }
+        }
+
+        // Apply advanced filters with conditions
+        AddFilterCondition(request.SalaryCompositionCodeFilter, "salary_composition_code", "SalaryCompositionCode");
+        AddFilterCondition(request.SalaryCompositionNameFilter, "salary_composition_name", "SalaryCompositionName");
+        AddFilterCondition(request.SalaryCompositionTypeFilter, "salary_composition_type", "SalaryCompositionType");
+        AddFilterCondition(request.SalaryCompositionNatureFilter, "salary_composition_nature", "SalaryCompositionNature");
+        AddFilterCondition(request.QuotaFilter, "salary_composition_quota", "Quota");
+        AddFilterCondition(request.ValueTypeFilter, "salary_composition_value_type", "ValueType");
+        AddFilterCondition(request.ValueFilter, "salary_composition_value_formula", "Value");
+        AddFilterCondition(request.DescriptionFilter, "salary_composition_description", "Description");
+
+        // Filter by taxable với condition
+        if (request.IsTaxableFilter != null)
+        {
+            switch (request.IsTaxableFilter.Condition)
+            {
+                case "equals":
+                    if (request.IsTaxableFilter.Value == "true")
+                        whereClauses.Add("salary_composition_tax_option IS NOT NULL");
+                    else if (request.IsTaxableFilter.Value == "false")
+                        whereClauses.Add("salary_composition_tax_option IS NULL");
+                    break;
+                case "notEquals":
+                    if (request.IsTaxableFilter.Value == "true")
+                        whereClauses.Add("salary_composition_tax_option IS NULL");
+                    else if (request.IsTaxableFilter.Value == "false")
+                        whereClauses.Add("salary_composition_tax_option IS NOT NULL");
+                    break;
+            }
+        }
+
+        // Filter by tax deductible với condition
+        if (request.IsTaxDeductibleFilter != null)
+        {
+            switch (request.IsTaxDeductibleFilter.Condition)
+            {
+                case "equals":
+                    if (request.IsTaxDeductibleFilter.Value == "true")
+                        whereClauses.Add("salary_composition_tax_deduction = 1");
+                    else if (request.IsTaxDeductibleFilter.Value == "false")
+                        whereClauses.Add("salary_composition_tax_deduction = 0");
+                    break;
+                case "notEquals":
+                    if (request.IsTaxDeductibleFilter.Value == "true")
+                        whereClauses.Add("salary_composition_tax_deduction = 0");
+                    else if (request.IsTaxDeductibleFilter.Value == "false")
+                        whereClauses.Add("salary_composition_tax_deduction = 1");
+                    break;
+            }
+        }
+
+        // Filter by show on payslip với condition (yes=1, no=2, if_not_zero=3)
+        if (request.ShowOnPayslipFilter != null && !string.IsNullOrWhiteSpace(request.ShowOnPayslipFilter.Value))
+        {
+            int showOnPayslipValue = request.ShowOnPayslipFilter.Value switch
+            {
+                "yes" => 1,
+                "no" => 2,
+                "if_not_zero" => 3,
+                _ => 0
+            };
+            if (showOnPayslipValue > 0)
+            {
+                switch (request.ShowOnPayslipFilter.Condition)
+                {
+                    case "equals":
+                        whereClauses.Add("salary_composition_show_on_payslip = @ShowOnPayslip");
+                        parameters.Add("ShowOnPayslip", showOnPayslipValue);
+                        break;
+                    case "notEquals":
+                        whereClauses.Add("salary_composition_show_on_payslip != @ShowOnPayslip");
+                        parameters.Add("ShowOnPayslip", showOnPayslipValue);
+                        break;
+                }
+            }
+        }
+
+        // Filter by source với condition (system=1, manual=2)
+        if (request.SourceFilter != null && !string.IsNullOrWhiteSpace(request.SourceFilter.Value))
+        {
+            int sourceValue = request.SourceFilter.Value switch
+            {
+                "system" => 1,
+                "manual" => 2,
+                _ => 0
+            };
+            if (sourceValue > 0)
+            {
+                switch (request.SourceFilter.Condition)
+                {
+                    case "equals":
+                        whereClauses.Add("salary_composition_source = @Source");
+                        parameters.Add("Source", sourceValue);
+                        break;
+                    case "notEquals":
+                        whereClauses.Add("salary_composition_source != @Source");
+                        parameters.Add("Source", sourceValue);
+                        break;
+                }
+            }
+        }
+
         var whereClause = whereClauses.Count > 0 ? "WHERE " + string.Join(" AND ", whereClauses) : "";
 
         var countSql = $"SELECT COUNT(1) FROM pa_salary_composition {whereClause}";

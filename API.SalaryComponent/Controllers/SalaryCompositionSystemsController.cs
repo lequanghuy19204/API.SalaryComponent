@@ -33,12 +33,9 @@ public class SalaryCompositionSystemsController : ControllerBase
     /// </summary>
     [HttpGet("paged")]
     public async Task<ActionResult<PagedResultDto<SalaryCompositionSystemDto>>> GetPaged(
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 15,
-        [FromQuery] string? searchText = null,
-        [FromQuery] string? type = null)
+        [FromQuery] SystemPagingRequestDto request)
     {
-        var result = await _service.GetPagedAsync(pageNumber, pageSize, searchText, type);
+        var result = await _service.GetPagedAsync(request);
         return Ok(result);
     }
 

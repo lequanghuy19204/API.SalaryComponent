@@ -204,15 +204,12 @@ public class SalaryCompositionSystemService : ISalaryCompositionSystemService
     }
 
     /// <summary>
-    /// Lấy danh sách có phân trang
+    /// Lấy danh sách có phân trang với bộ lọc nâng cao
     /// </summary>
-    /// <param name="pageNumber">Số trang</param>
-    /// <param name="pageSize">Số lượng bản ghi mỗi trang</param>
-    /// <param name="searchText">Văn bản tìm kiếm</param>
-    /// <param name="type">Loại thành phần lương</param>
+    /// <param name="request">DTO chứa thông tin phân trang và bộ lọc</param>
     /// <returns>Kết quả phân trang</returns>
-    public async Task<PagedResultDto<SalaryCompositionSystemDto>> GetPagedAsync(int pageNumber, int pageSize, string? searchText = null, string? type = null)
+    public async Task<PagedResultDto<SalaryCompositionSystemDto>> GetPagedAsync(SystemPagingRequestDto request)
     {
-        return await _systemRepository.GetPagedAsync(pageNumber, pageSize, searchText, type);
+        return await _systemRepository.GetPagedAsync(request);
     }
 }
